@@ -1,5 +1,5 @@
 # EpubVoice — Personal Epub Reader with Cloned Voice
-## Project Plan for Claude Code
+## Project Plan
 
 ---
 
@@ -16,9 +16,9 @@ This is a **portfolio project** that solves a real problem I have. I want to be 
 ```
 [Phone App] ←→ WiFi ←→ [Local TTS Server on my computer]
      |                           |
-  React Native             Coqui XTTS (voice cloning)
-  Expo                     Python + FastAPI
-  expo-speech (fallback)   My cloned voice model
+  Flutter / Dart           Coqui XTTS (voice cloning)
+  flutter_tts              Python + FastAPI
+  (native TTS fallback)    My cloned voice model
 ```
 
 **Phase 1 (V1):** App only, using device native TTS (no server needed, ship fast)
@@ -29,13 +29,11 @@ This is a **portfolio project** that solves a real problem I have. I want to be 
 ## Tech Stack
 
 ### Mobile App
-- **React Native** with **Expo** (managed workflow)
-- **TypeScript**
-- **expo-speech** — native TTS for V1
-- **expo-document-picker** — import epub from phone
-- **expo-file-system** — read and store epub locally
-- **@react-native-async-storage/async-storage** — save reading progress
-- **epubjs** — parse epub content and extract chapters
+- **Flutter 3.41+** / **Dart 3.11+**
+- **flutter_tts** — native TTS for V1
+- **file_picker** — import epub from phone
+- **shared_preferences** — save reading progress
+- **archive** + **xml** — custom epub parser (zip extraction + XML parsing)
 
 ### Local TTS Server (V2)
 - **Python 3.13+**
@@ -47,14 +45,14 @@ This is a **portfolio project** that solves a real problem I have. I want to be 
 
 ## V1 Feature Scope (ship this first, nothing more)
 
-- [ ] Import a single `.epub` file from the phone
-- [ ] Parse epub and show a list of chapters
-- [ ] Tap a chapter to start reading it aloud (native TTS)
-- [ ] Play / Pause button
-- [ ] Skip forward / backward by paragraph
-- [ ] Playback speed control (0.75x, 1x, 1.25x, 1.5x)
-- [ ] Remember last position when app is closed
-- [ ] Minimal but clean UI (dark background, readable font)
+- [x] Import a single `.epub` file from the phone
+- [x] Parse epub and show a list of chapters
+- [x] Tap a chapter to start reading it aloud (native TTS)
+- [x] Play / Pause button
+- [x] Skip forward / backward by paragraph
+- [x] Playback speed control (0.75x, 1x, 1.25x, 1.5x)
+- [x] Remember last position when app is closed
+- [x] Minimal but clean UI (dark background, readable font)
 
 **Explicitly out of scope for V1:**
 - Multiple books / library management
@@ -81,85 +79,42 @@ This is a **portfolio project** that solves a real problem I have. I want to be 
 
 ```
 epubvoice/
-├── CLAUDE.md                  ← this file
-├── app/                       ← React Native / Expo app
-│   ├── app/
-│   │   ├── index.tsx          ← home screen (import epub)
-│   │   ├── library.tsx        ← chapter list
-│   │   └── reader.tsx         ← reading screen with TTS controls
-│   ├── components/
-│   │   ├── PlayerControls.tsx ← play/pause/skip/speed
-│   │   ├── ChapterList.tsx    ← scrollable chapter selector
-│   │   └── ImportButton.tsx   ← epub file picker
-│   ├── hooks/
-│   │   ├── useEpubParser.ts   ← parse epub, extract chapters
-│   │   ├── useTTS.ts          ← manage speech synthesis
-│   │   └── useProgress.ts     ← save/load reading position
-│   ├── utils/
-│   │   └── epubUtils.ts       ← helper functions for epub parsing
-│   ├── package.json
-│   └── app.json
+├── README.md
+├── CLAUDE.md                       ← this file
+├── app/                            ← Flutter mobile app
+│   └── lib/
+│       ├── main.dart               ← app entry, dark theme
+│       ├── models/
+│       │   └── chapter.dart        ← Chapter data model
+│       ├── screens/
+│       │   ├── home_screen.dart    ← import epub
+│       │   ├── library_screen.dart ← chapter list
+│       │   └── reader_screen.dart  ← TTS reading + controls
+│       └── services/
+│           ├── epub_parser.dart    ← OPF/NCX/nav parsing
+│           ├── tts_service.dart    ← flutter_tts wrapper
+│           └── progress_service.dart ← shared_preferences
 │
-└── server/                    ← V2: local TTS server (Python)
-    ├── main.py                ← FastAPI server
-    ├── tts_engine.py          ← Coqui XTTS wrapper
-    ├── voice_sample/          ← my recorded voice samples go here
+└── server/                         ← V2: local TTS server (Python)
+    ├── main.py                     ← FastAPI server
+    ├── tts_engine.py               ← Coqui XTTS wrapper
+    ├── voice_sample/               ← recorded voice samples
     ├── requirements.txt
-    └── README.md              ← how to run the server
+    └── README.md
 ```
-
----
-
-## Build Order
-
-Work through these phases in order. Do not skip ahead.
-
-### Phase 1 — Scaffold & Import
-1. Initialize Expo project with TypeScript: `npx create-expo-app epubvoice --template`
-2. Install all dependencies listed above
-3. Build `ImportButton` component using `expo-document-picker`
-4. Store imported epub file locally using `expo-file-system`
-5. Verify the file is saved and readable
-
-### Phase 2 — Epub Parsing
-1. Integrate `epubjs` to parse the stored epub file
-2. Extract chapter list (title + content)
-3. Strip HTML tags from chapter content to get clean plain text
-4. Build `ChapterList` component to display chapters
-5. Wire up navigation from home screen → chapter list
-
-### Phase 3 — TTS Reading
-1. Build `useTTS` hook wrapping `expo-speech`
-2. Split chapter text into paragraph-sized chunks (for better control)
-3. Implement play / pause (stop and resume speech)
-4. Implement skip forward / backward by paragraph index
-5. Implement speed control (pass rate to expo-speech)
-6. Build `PlayerControls` component
-
-### Phase 4 — Progress & Polish
-1. Build `useProgress` hook using AsyncStorage
-2. Save: current book, current chapter, current paragraph index
-3. Restore position on app open
-4. Basic UI polish — dark theme, readable font size, comfortable spacing
-5. Test on a real device (not just simulator)
-
-### Phase 5 — V2 Local Server (after V1 is fully working)
-1. Set up Python environment and install Coqui XTTS
-2. Record 60-second voice sample (clean audio, no background noise)
-3. Build FastAPI endpoint: `POST /synthesize` accepts `{text: string}`, returns audio
-4. Test server locally, confirm audio quality
-5. Update `useTTS` hook: check if server is reachable, use it if yes, fallback to native if no
-6. Add server URL setting in app (so I can change IP if needed)
 
 ---
 
 ## Key Technical Decisions & Rationale
 
-**Why Expo managed workflow?**
-Faster setup, no Xcode/Android Studio config hell for V1. Can eject later if needed.
+**Why Flutter instead of React Native?**
+Started with Expo/React Native but hit too many toolchain issues: expo-modules-core shipping TS source that broke Node CLI, npm peer dependency hell, Blob/FileReader API gaps in RN. Flutter's pub manager resolved all deps on first try, and the epub parser runs pure Dart.
 
 **Why native TTS for V1?**
 Zero setup, works offline, ships faster. The goal is a working app first, perfect voice second.
+
+**Why a custom epub parser instead of a library?**
+epub.js and @lingo-reader/epub-parser both broke in mobile runtimes (browser API dependencies). A custom parser using archive (zip) + xml gives full control and handles EPUB 2/3 variants.
 
 **Why Coqui XTTS for V2 instead of ElevenLabs API?**
 Free, runs locally, voice data never leaves my machine, no rate limits.
@@ -168,25 +123,28 @@ Free, runs locally, voice data never leaves my machine, no rate limits.
 Minimal boilerplate, async by default, auto-generates API docs, easy to test.
 
 **Why paragraph-level chunking for TTS?**
-`expo-speech` has limits on text length and doesn't handle very long strings well. Chunking by paragraph also gives better control over skip forward/back behavior.
+TTS engines handle shorter text better. Chunking by paragraph also gives precise skip forward/back and position tracking.
 
 ---
 
 ## Known Challenges to Watch For
 
-- **epub parsing inconsistency:** epub files vary a lot in structure. Some use `<p>` tags, some use `<div>`, some have nested HTML. The HTML stripping logic needs to handle edge cases.
-- **expo-speech on iOS vs Android:** behavior differs slightly (pausing, rate limits). Test on both.
+- **epub parsing inconsistency:** epub files vary a lot in structure. Some use `<p>` tags, some use `<div>`, some have nested HTML. The parser handles common cases but edge cases exist.
+- **flutter_tts rate mapping:** Android uses 0.0–1.0 range where 0.5 is normal. User-facing speeds are mapped accordingly (1.0x → 0.5 native).
 - **Local server IP:** When on WiFi, the computer's local IP can change. Either hardcode it in a settings screen or use mDNS/Bonjour to discover it.
 - **XTTS cold start:** The first synthesis request after starting the server takes longer (model loads into memory). Handle loading state in the app.
 
 ---
 
-## How to Run (once set up)
+## How to Run
 
 ```bash
-# Mobile app
+# Mobile app — deploy to connected Android device
 cd app
-npx expo start
+flutter run
+
+# Or build a debug APK
+flutter build apk --debug
 
 # Local TTS server (V2)
 cd server
@@ -198,10 +156,10 @@ python main.py
 
 ## Definition of Done for V1
 
-- I can pick an epub from my phone
-- I can see the chapter list
-- I tap a chapter and it reads it out loud
-- I can pause, resume, skip paragraphs
-- I can change speed
-- When I close and reopen the app, it remembers where I was
-- It runs on my actual phone without crashing
+- [x] I can pick an epub from my phone
+- [x] I can see the chapter list
+- [x] I tap a chapter and it reads it out loud
+- [x] I can pause, resume, skip paragraphs
+- [x] I can change speed
+- [x] When I close and reopen the app, it remembers where I was
+- [x] It runs on my actual phone without crashing
