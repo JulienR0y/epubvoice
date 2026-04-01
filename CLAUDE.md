@@ -38,7 +38,7 @@ This is a **portfolio project** that solves a real problem I have. I want to be 
 - **epubjs** — parse epub content and extract chapters
 
 ### Local TTS Server (V2)
-- **Python 3.10+**
+- **Python 3.13+**
 - **Coqui XTTS v2** — open source voice cloning model
 - **FastAPI** — lightweight HTTP server
 - **uvicorn** — ASGI server runner
