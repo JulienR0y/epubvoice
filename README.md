@@ -2,6 +2,14 @@
 
 A personal mobile app that imports `.epub` files and reads them aloud. Built as a self-hosted alternative to ElevenLabs Reader — no subscription, no limits, my voice, my data.
 
+<p align="center">
+  <img src="assets/screenshots/home.png" width="250" alt="Home screen" />
+  &nbsp;&nbsp;
+  <img src="assets/screenshots/library.png" width="250" alt="Chapter list" />
+  &nbsp;&nbsp;
+  <img src="assets/screenshots/reader.png" width="250" alt="Reader with TTS controls" />
+</p>
+
 ## Features (V1 — current)
 
 - Import any `.epub` file from your phone
