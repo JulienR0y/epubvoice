@@ -74,9 +74,13 @@ class TtsService {
     }
   }
 
+  // flutter_tts on Android: 0.0–1.0 range where 0.5 = normal.
+  // User-facing speeds (0.75x, 1.0x, 1.25x, 1.5x) map to 0.375, 0.5, 0.625, 0.75.
+  double _toNativeRate(double userSpeed) => userSpeed * 0.5;
+
   Future<void> setSpeed(double speed) async {
     _speed = speed;
-    await _tts.setSpeechRate(speed);
+    await _tts.setSpeechRate(_toNativeRate(speed));
     if (_isPlaying) {
       await _tts.stop();
       await _speakCurrent();
@@ -85,7 +89,7 @@ class TtsService {
 
   Future<void> _speakCurrent() async {
     if (_currentParagraph >= _paragraphs.length) return;
-    await _tts.setSpeechRate(_speed);
+    await _tts.setSpeechRate(_toNativeRate(_speed));
     await _tts.speak(_paragraphs[_currentParagraph]);
   }
 
