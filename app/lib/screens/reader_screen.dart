@@ -43,9 +43,29 @@ class _ReaderScreenState extends State<ReaderScreen> {
     _tts.onPlayingChanged = (playing) {
       setState(() => _isPlaying = playing);
     };
+    _tts.onChapterComplete = _advanceChapter;
     _initParagraphKeys();
     _tts.setParagraphs(_chapter.paragraphs);
     _loadProgress();
+  }
+
+  void _advanceChapter() {
+    final next = _chapterIndex + 1;
+    if (next >= widget.chapters.length) {
+      _tts.stop();
+      return;
+    }
+    setState(() {
+      _chapterIndex = next;
+      _paragraphIndex = 0;
+    });
+    _initParagraphKeys();
+    _tts.setParagraphs(_chapter.paragraphs);
+    ProgressService.save(_chapterIndex, 0);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scrollToParagraph(0);
+    });
+    _tts.play();
   }
 
   void _initParagraphKeys() {

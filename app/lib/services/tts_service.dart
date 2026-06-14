@@ -13,6 +13,7 @@ class TtsService {
   List<String> _paragraphs = [];
   void Function(int index)? onParagraphChanged;
   void Function(bool playing)? onPlayingChanged;
+  void Function()? onChapterComplete;
 
   bool get isPlaying => _intendedPlaying;
   double get speed => _speed;
@@ -25,6 +26,8 @@ class TtsService {
         _currentParagraph = next;
         onParagraphChanged?.call(next);
         _speakCurrent();
+      } else if (onChapterComplete != null) {
+        onChapterComplete!();
       } else {
         _intendedPlaying = false;
         onPlayingChanged?.call(false);
